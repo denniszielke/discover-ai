@@ -1,4 +1,5 @@
 import os
+import json
 import dotenv
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 import streamlit as st
@@ -12,6 +13,7 @@ from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.callbacks.streamlit import (
     StreamlitCallbackHandler,
 )
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from promptflow.tracing import start_trace
 from bs4 import BeautifulSoup
 
@@ -26,7 +28,24 @@ if not instrumentor.is_instrumented_by_opentelemetry:
     instrumentor.instrument()
 
 st.title("💬 AI agentic RAG")
-st.caption("🚀 A Bot that can use an agent to retrieve augment and generate")
+st.caption("🚀 A Bot that can use an agent to retrieve, augment, generate, validate and iterate")
+
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+for message in st.session_state.chat_history:
+    if isinstance(message, HumanMessage):
+        with st.chat_message("Human"):
+            st.markdown(message.content)
+    elif isinstance(message, AIMessage):
+        with st.chat_message("AI"):
+            st.markdown(message.content)
+    elif isinstance(message, ToolMessage):
+        with st.chat_message("Tool"):
+            st.markdown(message.content)
+    else:
+        with st.chat_message("Agent"):
+            st.markdown(message.content)
 
 llm: AzureChatOpenAI = None
 embeddings_model: AzureOpenAIEmbeddings = None
@@ -74,20 +93,11 @@ if "session_id" not in st.session_state:
     st.write("You are running in session: " + st.session_state["session_id"])
 
 urls = [
-    "https://lilianweng.github.io/posts/2023-06-23-agent/",
-    "https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/",
-    "https://lilianweng.github.io/posts/2023-10-25-adv-attack-llm/",
+    "https://azure.microsoft.com/en-us/blog/introducing-phi-3-redefining-whats-possible-with-slms/",
+    "https://www.microsoft.com/en-us/research/project/physics-of-agi/articles/whos-harry-potter-making-llms-forget-2/",
+    "https://azure.microsoft.com/en-us/blog/openais-fastest-model-gpt-4o-mini-is-now-available-on-azure-ai/",
+    "https://www.microsoft.com/en-us/industry/blog/retail/2024/07/09/supply-chain-ai-for-the-new-era-of-value-realization/"
 ]
-
-# urls = [
-#     "https://www.microsoft.com/en-us/research/blog/introducing-autogen-studio-a-low-code-interface-for-building-multi-agent-workflows/",
-#     "https://raw.githubusercontent.com/microsoft/autogen/main/TRANSPARENCY_FAQS.md",
-#     "https://blog.composio.dev/crewai-examples/",
-#     "https://blog.langchain.dev/crewai-unleashed-future-of-ai-agent-teams/",
-#     "https://langchain-ai.github.io/langgraph/concepts/",
-#     "https://blog.langchain.dev/langgraph/",
-#     "https://blog.langchain.dev/langgraph-multi-agent-workflows/"
-# ]
 
 docs = [WebBaseLoader(url).load() for url in urls]
 docs_list = [item for sublist in docs for item in sublist]
@@ -111,7 +121,7 @@ from langchain.tools.retriever import create_retriever_tool
 retriever_tool = create_retriever_tool(
     retriever,
     "retrieve_blog_posts",
-    "Search and return information about Lilian Weng blog posts on LLM agents, prompt engineering, and adversarial attacks on LLMs.",
+    "Search and return information from the microsoft engineering teams about LLM agents, SLM agent, prompt engineering, and model tuning.",
 )
 
 tools = [retriever_tool]
@@ -131,7 +141,6 @@ class AgentState(TypedDict):
 from typing import Annotated, Literal, Sequence, TypedDict
 
 from langchain import hub
-from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
@@ -333,32 +342,67 @@ workflow.add_edge("rewrite", "agent")
 # Compile
 graph = workflow.compile()
 
-if prompt := st.chat_input():
+human_query = st.chat_input()
 
-    st.chat_message("user").write(prompt)
+if human_query is not None and human_query != "":
+
+    st.session_state.chat_history.append(HumanMessage(human_query))
 
     inputs = {
         "messages": [
-            ("user", prompt),
+            ("user", human_query),
         ]
     }
 
-    with st.chat_message("assistant"):
-        for s in graph.stream(inputs):
-                if "__end__" not in s:
-                    st.write(s)
+    with st.chat_message("Human"):
+        st.markdown(human_query)
 
-        # st_callback = StreamlitCallbackHandler(st.container())
-        # ans = ""
-        # container = st.empty()
-        # for token in graph.stream(input_text):
-        #     ans += token.content
-        #     container.info(ans)
+    for event in graph.stream(inputs):       
+        print ("message: ")
+        for value in event.values():
+            print(value)
+            if ( isinstance(value["messages"][-1], AIMessage) ):
+                print("AI:", value["messages"][-1].content)
+                with st.chat_message("Agent"):
+                    if (value["messages"][-1].content == ''):
+                        toolusage = ''
+                        for tool in value["messages"][-1].additional_kwargs["tool_calls"]:
+                            print(tool)
+                            toolusage += "id:" + str(tool["index"]) + "  \n name: " + tool["function"]["name"] + "  \n arguments: " + tool["function"]["arguments"] + "  \n\n"
+                        st.write("Using the folllwing tools: \n", toolusage)
+                    else:
+                        st.write(value["messages"][-1].content)
+            
+            if ( isinstance(value["messages"][-1], ToolMessage) ):
+                print("Tool:", value["messages"][-1].content)
+                with st.chat_message("Tool"):
+                    st.write(value["messages"][-1].content.replace('\n\n', ''))
+            
+            if ( isinstance(value["messages"][-1], str) ):
+                print("Agent:", value["messages"][-1])
+                with st.chat_message("AI"):
+                    st.write(value["messages"][-1])
 
-        # st_callback = StreamlitCallbackHandler(st.container())
-        # agent_executor = graph.create_executor()
+            # print("Assistant:", value["messages"][-1].content)
+            # print("type: ", type(value["messages"][-1].content))
+            # with st.chat_message("assistant"):
+            #     st.write(value["messages"][-1].content)
+        # print(s)
+        # print(s["agent"])
+        # print(s["messages"][-1])
+        # print(s["messages"][-1].content)
+        # print(type(s["messages"][-1]))
+        # aioutput = json.loads(s)
+        # print ("aioutput: ")
+        # print(aioutput.agents.messages)
+        # if "__end__" not in s:
+        #     with st.chat_message("assistant"):
+        #         st.write(s)
 
-        # response = agent_executor.invoke(
-        #     {"input": prompt, "file_path": st.session_state['file_path']}, {"callbacks": [st_callback]}
-        # )
-        # st.write(response["output"])
+    # user_input = input("User: ")
+    # if user_input.lower() in ["quit", "exit", "q"]:
+    #     print("Goodbye!")
+    #     break
+    # for event in graph.stream({"messages": ("user", user_input)}):
+    #     for value in event.values():
+    #         print("Assistant:", value["messages"][-1].content)

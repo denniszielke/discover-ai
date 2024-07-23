@@ -62,8 +62,6 @@ retriever = AzureAISearchRetriever(
 def format_docs(docs):
     return "\n\n".join([d.page_content for d in docs])
 
-
-
 def get_response(query, chat_history):
     template = """Use the given context to answer the question. 
     If you don't know the answer, say you don't know. 
