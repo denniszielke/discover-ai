@@ -35,7 +35,7 @@ if not instrumentor.is_instrumented_by_opentelemetry:
     instrumentor.instrument()
 
 st.title("💬 AI bot that can use tools")
-st.caption("🚀 A Bot that can use tools to answer questions")
+st.caption("🚀 A Bot that can use tools to answer questions about time and space")
 
 def get_session_id() -> str:
     id = random.randint(0, 1000000)

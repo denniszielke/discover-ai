@@ -25,8 +25,8 @@ instrumentor = LangchainInstrumentor()
 if not instrumentor.is_instrumented_by_opentelemetry:
     instrumentor.instrument()
 
-st.title("💬 AI agentic retrieval augmented generation ")
-st.caption("🚀 A Bot that can run dynamically generated code powered by Langchain, Azure OpenAI and Azure Container Apps")
+st.title("💬 AI agentic RAG")
+st.caption("🚀 A Bot that can use an agent to retrieve augment and generate")
 
 llm: AzureChatOpenAI = None
 embeddings_model: AzureOpenAIEmbeddings = None

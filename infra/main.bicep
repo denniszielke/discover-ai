@@ -24,8 +24,8 @@ var tags = { 'azd-env-name': environmentName, 'app': 'ai-agents', 'tracing': 'ye
 param completionDeploymentModelName string = 'gpt-35-turbo'
 param completionModelName string = 'gpt-35-turbo'
 param completionModelVersion string = '0613'
-param embeddingDeploymentModelName string = 'text-embedding-ada-002'
-param embeddingModelName string = 'text-embedding-ada-002'
+param embeddingDeploymentModelName string = 'text-embedding-3-small'
+param embeddingModelName string = 'text-embedding-3-small'
 param openaiApiVersion string = '2024-02-01'
 param openaiCapacity int = 200
 param modelDeployments array = [
@@ -42,7 +42,7 @@ param modelDeployments array = [
     model: {
       format: 'OpenAI'
       name: embeddingModelName
-      version: '2'
+      version: '1'
     }
   }
 ]
@@ -95,6 +95,16 @@ module openai './ai/openai.bicep' = {
   }
 }
 
+module search './ai/search.bicep' = {
+  name: 'search'
+  scope: resourceGroup
+  params: {
+    location: location
+    tags: tags
+    name: !empty(openaiName) ? openaiName : '${abbrs.searchSearchServices}${resourceToken}'
+  }
+}
+
 // Monitor application with Azure Monitor
 module monitoring './core/monitor/monitoring.bicep' = {
   name: 'monitoring'
@@ -127,3 +137,6 @@ output AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME string = completionDeploymentMode
 output AZURE_OPENAI_EMBEDDING_MODEL string = embeddingModelName
 output AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME string = embeddingDeploymentModelName
 output POOL_MANAGEMENT_ENDPOINT string = dynamicSessions.outputs.poolManagementEndpoint
+output AZURE_AI_SEARCH_NAME string = search.outputs.searchName
+output AZURE_AI_SEARCH_ENDPOINT string = search.outputs.searchEndpoint
+output AZURE_AI_SEARCH_KEY string = search.outputs.searchAdminKey

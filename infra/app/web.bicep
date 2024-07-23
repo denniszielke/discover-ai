@@ -10,6 +10,7 @@ param serviceName string = 'web'
 param imageName string
 param poolManagementEndpoint string
 param openaiName string
+param searchName string
 
 resource userIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
   name: identityName
@@ -74,11 +75,23 @@ resource app 'Microsoft.App/containerApps@2023-04-01-preview' = {
             }
             {
               name: 'AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME'
-              value: 'text-embedding-ada-002'
+              value: 'text-embedding-3-small'
             }
             {
               name: 'AZURE_OPENAI_EMBEDDING_MODEL'
-              value: 'text-embedding-ada-002'
+              value: 'text-embedding-3-small'
+            }
+            {
+              name: 'AZURE_AI_SEARCH_NAME'
+              value: search.name
+            }
+            {
+              name: 'AZURE_AI_SEARCH_ENDPOINT'
+              value: 'https://${search.name}.search.windows.net'
+            }
+            {
+              name: 'AZURE_AI_SEARCH_KEY'
+              value: listAdminKeys(search.id, '2023-11-01').primaryKey
             }
           ]
           resources: {
@@ -105,6 +118,10 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-02-01-pr
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: applicationInsightsName
+}
+
+resource search 'Microsoft.Search/searchServices@2023-11-01' existing = {
+  name: searchName
 }
 
 output uri string = 'https://${app.properties.configuration.ingress.fqdn}'

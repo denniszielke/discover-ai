@@ -42,6 +42,7 @@ POOL_MANAGEMENT_NAME=$(az resource list -g $RESOURCE_GROUP --resource-type "Micr
 POOL_MANAGEMENT_ID=$(az resource list -g $RESOURCE_GROUP --resource-type "Microsoft.App/sessionPools" --query "[0].id" -o tsv)
 POOL_MANAGEMENT_ENDPOINT=$(az rest --method get \
     --url "https://management.azure.com/$POOL_MANAGEMENT_ID?api-version=2024-02-02-preview" --query "properties.poolManagementEndpoint" -o tsv)
+SEARCH_NAME=$(az resource list -g $RESOURCE_GROUP --resource-type "Microsoft.Search/searchServices" --query "[0].name" -o tsv)
 AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 
 echo "container registry name: $AZURE_CONTAINER_REGISTRY_NAME"
@@ -52,6 +53,7 @@ echo "identity name: $IDENTITY_NAME"
 echo "service name: $SERVICE_NAME"
 echo "pool name: $POOL_MANAGEMENT_NAME"
 echo "pool endpoint: $POOL_MANAGEMENT_ENDPOINT"
+echo "search name: $SEARCH_NAME"
 
 CONTAINER_APP_EXISTS=$(az resource list -g $RESOURCE_GROUP --resource-type "Microsoft.App/containerApps" --query "[?contains(name, '$SERVICE_NAME')].id" -o tsv)
 EXISTS="false"
@@ -69,6 +71,6 @@ IMAGE_NAME="${AZURE_CONTAINER_REGISTRY_NAME}.azurecr.io/$SERVICE_NAME:latest"
 URI=$(az deployment group create -g $RESOURCE_GROUP -f ./infra/app/web.bicep \
           -p name=$SERVICE_NAME -p location=$LOCATION -p containerAppsEnvironmentName=$ENVIRONMENT_NAME \
           -p containerRegistryName=$AZURE_CONTAINER_REGISTRY_NAME -p applicationInsightsName=$APPINSIGHTS_NAME -p serviceName=$SERVICE_NAME \
-          -p openaiName=$OPENAI_NAME -p poolManagementEndpoint=$POOL_MANAGEMENT_ENDPOINT -p identityName=$IDENTITY_NAME -p imageName=$IMAGE_NAME --query properties.outputs.uri.value)
+          -p openaiName=$OPENAI_NAME -p searchName=$SEARCH_NAME -p poolManagementEndpoint=$POOL_MANAGEMENT_ENDPOINT -p identityName=$IDENTITY_NAME -p imageName=$IMAGE_NAME --query properties.outputs.uri.value)
 
 echo "deployment uri: $URI"

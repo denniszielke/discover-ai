@@ -12,33 +12,34 @@ Regions that this deployment can be executed:
 The following lines of code will connect your Codespace az cli and azd cli to the right Azure subscription:
 
 ```
-# log in with the provided credentials - OPEN A PRIVATE BROWSER SESSION
-az login --use-device-code
+az login
 
-# "log into azure dev cli - only once" - OPEN A PRIVATE BROWSER SESSION
-azd auth login --use-device-code
+azd auth login
 
 ```
 
-Now deploy the infrastructure components
+Now deploy the infrastructure components with azure cli
 
 ```
-# "provisioning all the resources with the azure dev cli"
 azd up
 ```
 
 Get the values for some env variables
 ```
-# "get and set the value for AZURE_ENV_NAME"
 azd env get-values | grep AZURE_ENV_NAME
 source <(azd env get-values)
 ```
 
 Last but not least: deploy a dummy container in Azure Container Apps. 
 ```
-echo "building and deploying the agent for phase 1"
 bash ./azd-hooks/deploy.sh 03-rag $AZURE_ENV_NAME
 
+```
+
+## Start locally
+
+```
+python -m streamlit run app.py --server.port=8000
 ```
 
 ## Deploy resources for Chapter 03

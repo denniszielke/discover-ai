@@ -56,8 +56,8 @@ llm = AzureChatOpenAI(
 )
 
 retriever = AzureAISearchRetriever(
-    content_key="plot", top_k=5, index_name="movies-semantic-index"
-)    
+    content_key="plot", top_k=5, index_name="movies-semantic-index", service_name=os.getenv("AZURE_AI_SEARCH_NAME"), api_key=os.getenv("AZURE_AI_SEARCH_KEY")
+)     
 
 def format_docs(docs):
     return "\n\n".join([d.page_content for d in docs])
