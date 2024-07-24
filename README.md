@@ -1,4 +1,4 @@
-# Discover AI
+# Discover Generative AI Apps on Azure
 This repository contains AI demos
 
 Regions that this deployment can be executed:
