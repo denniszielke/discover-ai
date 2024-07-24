@@ -1,5 +1,5 @@
 # Discover Generative AI Apps on Azure
-This repository contains AI demos
+This repository contains demos and templates for building intelligent Apps using OpenAI on Azure.
 
 Regions that this deployment can be executed:
 - uksouth
