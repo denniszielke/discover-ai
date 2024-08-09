@@ -11,6 +11,7 @@ from langchain_openai import AzureChatOpenAI
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain.agents.agent import RunnableAgent
 from langchain_community.agent_toolkits.load_tools import load_tools
+from langchain_core.tools import tool
 from langchain_community.callbacks.streamlit import (
     StreamlitCallbackHandler,
 )
@@ -34,6 +35,9 @@ instrumentor = LangchainInstrumentor()
 if not instrumentor.is_instrumented_by_opentelemetry:
     instrumentor.instrument()
 
+st.set_page_config(
+    page_title="AI bot that can use tools"
+)
 st.title("💬 AI bot that can use tools")
 st.caption("🚀 A Bot that can use tools to answer questions about time and space")
 

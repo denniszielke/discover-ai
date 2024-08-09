@@ -382,27 +382,3 @@ if human_query is not None and human_query != "":
                 print("Agent:", value["messages"][-1])
                 with st.chat_message("AI"):
                     st.write(value["messages"][-1])
-
-            # print("Assistant:", value["messages"][-1].content)
-            # print("type: ", type(value["messages"][-1].content))
-            # with st.chat_message("assistant"):
-            #     st.write(value["messages"][-1].content)
-        # print(s)
-        # print(s["agent"])
-        # print(s["messages"][-1])
-        # print(s["messages"][-1].content)
-        # print(type(s["messages"][-1]))
-        # aioutput = json.loads(s)
-        # print ("aioutput: ")
-        # print(aioutput.agents.messages)
-        # if "__end__" not in s:
-        #     with st.chat_message("assistant"):
-        #         st.write(s)
-
-    # user_input = input("User: ")
-    # if user_input.lower() in ["quit", "exit", "q"]:
-    #     print("Goodbye!")
-    #     break
-    # for event in graph.stream({"messages": ("user", user_input)}):
-    #     for value in event.values():
-    #         print("Assistant:", value["messages"][-1].content)

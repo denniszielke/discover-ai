@@ -1,0 +1,13 @@
+openai==1.37.0
+pydantic==2.8.2
+python-dotenv==1.0.1
+tiktoken==0.7.0
+uvicorn==0.30.3
+streamlit==1.36.0
+azure-identity==1.17.1
+llama-index
+llama-agents
+llama-index-agent-openai
+llama-index-llms-azure-openai
+llama-index-embeddings-azure-openai
+llama-index-program-openai
