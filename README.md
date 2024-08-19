@@ -23,6 +23,7 @@ The following scenarios are implemented in this repository:
 | [Tracing Chat application](./src/04-orchestration-lc/app.py)| Learning about tracing a running application | Azure OpenAI, LangChain, Azure PromptFlow, Streamlit, Azure AI Search  |
 | [Function Calling](./src/05-tools/tools-openai.ipynb)| Learning about using tools from a model | Azure OpenAI, Azure PromptFlow |
 | [Orchestrating tools](./src/05-tools/app.py)| Learning about orchestrating tools from an application | Azure OpenAI, Azure PromptFlow, LangChain |
+| [Orchestrating multiple tools](./src/05-multi-tools-tag-lc/app.py)| Learning about multiple orchestrating tools from an application | Azure OpenAI, Azure PromptFlow, LangChain |
 | [Agentic RAG](./src/06-agents-lg/app.py)| Learning about using agentic retrieval augmented generation | Azure OpenAI, Azure PromptFlow, LangChain, Langgraph |
 
 ## Quickstart & Infrastructure setup
