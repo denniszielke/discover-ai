@@ -62,8 +62,8 @@ st.set_page_config(
     page_title="AI bot that can use multiple tools"
 )
 
-st.title("💬 AI bot that can use AI Search and Humans")
-st.caption("🚀 A Bot that can use a vector store and tools to answer questions")
+st.title("💬 AI bot that can use tools in combination")
+st.caption("🚀 A Bot that can use a vector store, humans and tools to answer questions")
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
@@ -331,7 +331,7 @@ agent = create_structured_chat_agent(llm, tools, prompt)
   
 agent_executor = agents.AgentExecutor(
         name="Tools Agent",
-        agent=agent, tools=tools,  verbose=True, handle_parsing_errors=True, max_iterations=10, return_intermediate_steps=True, 
+        agent=agent, tools=tools, verbose=True, handle_parsing_errors=True, max_iterations=10, return_intermediate_steps=True, 
         # handle errors
         error_message="I'm sorry, I couldn't understand that. Please try again.",
     )
