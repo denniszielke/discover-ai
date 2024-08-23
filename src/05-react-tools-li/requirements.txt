@@ -1,5 +1,5 @@
 llama-index-llms-openai
 llama-index
-openai==1.37.0
+openai==1.42.0
 pydantic==2.8.2
 python-dotenv==1.0.1

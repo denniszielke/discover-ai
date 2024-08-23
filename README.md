@@ -25,6 +25,8 @@ The following scenarios are implemented in this repository:
 | [Orchestrating tools](./src/05-tools/app.py)| Learning about orchestrating tools from an application | Azure OpenAI, Azure PromptFlow, LangChain |
 | [Orchestrating multiple tools](./src/05-multi-tools-tag-lc/app.py)| Learning about multiple orchestrating tools from an application | Azure OpenAI, Azure PromptFlow, LangChain |
 | [Agentic RAG](./src/06-agents-lg/app.py)| Learning about using agentic retrieval augmented generation | Azure OpenAI, Azure PromptFlow, LangChain, Langgraph |
+| [Async Agents Tools](./src/06-agents-tools-li/app.py)| Learning about using agentic async tools | Azure OpenAI, Azure PromptFlow, Lama Index |
+| [Distributed Async Agents Tools](./src/06-agents-kafka-li/app.py)| Learning about using agentic tools in a distributed system | Azure OpenAI, Azure PromptFlow, Lama Index, Kafka |
 
 ## Quickstart & Infrastructure setup
 

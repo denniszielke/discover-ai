@@ -15,7 +15,6 @@ from langchain_community.callbacks.streamlit import (
 )
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from promptflow.tracing import start_trace
-from bs4 import BeautifulSoup
 
 dotenv.load_dotenv()
 # start a trace session, and print a url for user to check trace
