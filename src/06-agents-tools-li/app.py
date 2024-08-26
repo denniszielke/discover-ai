@@ -94,10 +94,16 @@ def get_the_secret_fact() -> str:
     """Returns the secret fact."""
     return "The secret fact is: A baby llama is called a 'Cria'."
 
+from llama_index.llms.ollama import Ollama
+
+phi = Ollama(base_url='http://localhost:11434', model='phi3.5', temperature=0.8, request_timeout=300,
+             system_prompt="You are an assistant helping a human calculate basic math problems. Respond with the right answer and a short explaination.")
+
+
 tool = FunctionTool.from_defaults(fn=get_the_secret_fact)
 
 agent1 = ReActAgent.from_tools([tool], llm=llm)
-agent2 = ReActAgent.from_tools([], llm=llm)
+agent2 = ReActAgent.from_tools([], llm=phi)
 
 # create our multi-agent framework components
 message_queue = SimpleMessageQueue(port=8000)
@@ -116,8 +122,8 @@ agent_server_1 = AgentService(
 agent_server_2 = AgentService(
     agent=agent2,
     message_queue=message_queue,
-    description="Useful for getting random dumb facts.",
-    service_name="dumb_fact_agent",
+    description="Useful for solving math problems.",
+    service_name="math_problem_solver",
     port=8003,
 )
 
@@ -134,5 +140,9 @@ launcher = LocalLauncher(
     message_queue,
 )
 result = launcher.launch_single("What is the secret fact?")
+
+print(f"Result: {result}")
+
+result = launcher.launch_single("What two times 2?")
 
 print(f"Result: {result}")

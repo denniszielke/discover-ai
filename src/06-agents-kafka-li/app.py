@@ -129,7 +129,7 @@ machine_tools_2 = FunctionTool.from_defaults(fn=get_number_of_machine_jobs)
 order_tools_1 = FunctionTool.from_defaults(fn=get_order_status)
 
 agent1 = ReActAgent.from_tools([machine_tools_1, machine_tools_2], llm=llm)
-agent2 = ReActAgent.from_tools([], llm=phi)
+agent2 = ReActAgent.from_tools([], llm=llm)
 
 from llama_index.core.tools import FunctionTool
 
