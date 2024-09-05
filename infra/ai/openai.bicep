@@ -1,7 +1,7 @@
 param name string
-param location string = resourceGroup().location
+param location string
 param tags object = {}
-param capacity int = 200
+param capacity int
 
 param kind string = 'OpenAI'
 // Public network access of the Azure OpenAI service
@@ -47,3 +47,4 @@ resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01
 output openaiEndpoint string = account.properties.endpoint
 output openaiKey string = listKeys(account.id, '2022-10-01').key1
 output openaiName string = account.name
+output location string = account.location

@@ -1,0 +1,8 @@
+// Knowledge Graph
+digraph {
+	1 [label=Cars color=blue]
+	2 [label=Wheels color=green]
+	3 [label=Airplanes color=red]
+	1 -> 2 [label=has color=purple]
+	3 -> 2 [label=has color=purple]
+}

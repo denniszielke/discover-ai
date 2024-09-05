@@ -8,7 +8,8 @@ param environmentName string
 @minLength(1)
 @description('Primary location for all resources')
 param location string
-
+param aiResourceLocation string
+@description('Id of the user or app to assign application roles')
 param resourceGroupName string = ''
 param containerAppsEnvironmentName string = ''
 param containerRegistryName string = ''
@@ -21,13 +22,13 @@ var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var tags = { 'azd-env-name': environmentName, 'app': 'ai-agents', 'tracing': 'yes' }
 
-param completionDeploymentModelName string = 'gpt-35-turbo'
-param completionModelName string = 'gpt-35-turbo'
-param completionModelVersion string = '0613'
+param completionDeploymentModelName string = 'gpt-4o'
+param completionModelName string = 'gpt-4o'
+param completionModelVersion string = '2024-05-13'
 param embeddingDeploymentModelName string = 'text-embedding-3-small'
 param embeddingModelName string = 'text-embedding-3-small'
 param openaiApiVersion string = '2024-02-01'
-param openaiCapacity int = 200
+param openaiCapacity int = 50
 param modelDeployments array = [
   {
     name: completionDeploymentModelName
@@ -86,7 +87,7 @@ module openai './ai/openai.bicep' = {
   name: 'openai'
   scope: resourceGroup
   params: {
-    location: location
+    location: !empty(aiResourceLocation) ? aiResourceLocation : location
     tags: tags
     customDomainName: !empty(openaiName) ? openaiName : '${abbrs.cognitiveServicesAccounts}${resourceToken}'
     name: !empty(openaiName) ? openaiName : '${abbrs.cognitiveServicesAccounts}${resourceToken}'
