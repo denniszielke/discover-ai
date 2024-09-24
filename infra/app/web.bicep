@@ -8,7 +8,6 @@ param containerAppsEnvironmentName string
 param containerRegistryName string
 param serviceName string = 'web'
 param imageName string
-param poolManagementEndpoint string
 param openaiName string
 param searchName string
 
@@ -55,15 +54,16 @@ resource app 'Microsoft.App/containerApps@2023-04-01-preview' = {
               value: applicationInsights.properties.ConnectionString
             }
             {
-              name: 'POOL_MANAGEMENT_ENDPOINT'
-              value: poolManagementEndpoint}
-            {
               name: 'AZURE_OPENAI_ENDPOINT'
               value: account.properties.endpoint
             }
             {
               name: 'AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME'
-              value: 'gpt-35-turbo'
+              value: 'gpt-4o'
+            }
+            {
+              name: 'AZURE_OPENAI_COMPLETION_MODEL'
+              value: 'gpt-4o'
             }
             {
               name: 'AZURE_OPENAI_VERSION'
@@ -75,11 +75,11 @@ resource app 'Microsoft.App/containerApps@2023-04-01-preview' = {
             }
             {
               name: 'AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME'
-              value: 'text-embedding-3-small'
+              value: 'text-embedding-3-large'
             }
             {
               name: 'AZURE_OPENAI_EMBEDDING_MODEL'
-              value: 'text-embedding-3-small'
+              value: 'text-embedding-3-large'
             }
             {
               name: 'AZURE_AI_SEARCH_NAME'

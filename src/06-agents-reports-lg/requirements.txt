@@ -1,5 +1,5 @@
-openai==1.45.1
-pydantic==2.9.1
+openai==1.47.1
+pydantic==2.9.2
 python-dotenv==1.0.1
 tiktoken==0.7.0
 azure-search-documents==11.5.1
@@ -7,11 +7,11 @@ azure-identity==1.17.1
 streamlit==1.38.0
 promptflow==1.15.0
 promptflow-core==1.15.0
-promptflow-azure==1.15.0
-promptflow-tracing==1.15.0
 langchain==0.3.0
-langchain-core==0.3.0
+langchain-core==0.3.5
 langchain-community==0.3.0
 langchain-openai==0.2.0
 langchain-text-splitters==0.3.0
 langchain-qdrant==0.1.4
+langgraph==0.2.26
+beautifulsoup4==4.12.3

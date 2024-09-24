@@ -22,9 +22,11 @@ var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var tags = { 'azd-env-name': environmentName, 'app': 'ai-agents', 'tracing': 'yes' }
 
+param deployPostgres bool = false
+param deploySessions bool = false
 param completionDeploymentModelName string = 'gpt-4o'
 param completionModelName string = 'gpt-4o'
-param completionModelVersion string = '2024-05-13'
+param completionModelVersion string = '2024-08-06'
 param embeddingDeploymentModelName string = 'text-embedding-3-small'
 param embeddingModelName string = 'text-embedding-3-small'
 param openaiApiVersion string = '2024-02-01'
@@ -47,6 +49,11 @@ param modelDeployments array = [
     }
   }
 ]
+
+var databaseAdmin = 'dbadmin'
+var databaseName = 'langfuse'
+@secure()
+param databasePassword string = uniqueString(subscription().id, environmentName, location)
 
 // Organize resources in a resource group
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -72,7 +79,7 @@ module containerApps './core/host/container-apps.bicep' = {
   }
 }
 
-module dynamicSessions './core/host/dynamic-sessions.bicep' = {
+module dynamicSessions './core/host/dynamic-sessions.bicep' = if(deploySessions) {
   name: 'dynamic-${resourceToken}'
   scope: resourceGroup
   params: {
@@ -118,6 +125,43 @@ module monitoring './core/monitor/monitoring.bicep' = {
     applicationInsightsDashboardName: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
   }
 }
+
+module postgresServer 'core/data/flexibleserver.bicep' = if(deployPostgres) {
+  name: 'postgresql'
+  scope: resourceGroup
+  params: {
+    name: '${abbrs.dBforPostgreSQLServers}${resourceToken}'
+    location: location
+    tags: tags
+    sku: {
+      name: 'Standard_B1ms'
+      tier: 'Burstable'
+    }
+    storage: {
+      storageSizeGB: 32
+    }
+    version: '16'
+    administratorLogin: databaseAdmin
+    administratorLoginPassword: databasePassword
+    databaseNames: [ databaseName ]
+    allowAzureIPsFirewall: true
+  }
+}
+
+// module langfuse 'app/fuse.bicep' = if(deployPostgres) {
+//   name: 'langfuse'
+//   scope: resourceGroup
+//   params: {
+//     name: 'langfuse'
+//     location: location
+//     tags: tags 
+//     identityName: '${abbrs.managedIdentityUserAssignedIdentities}api-agents'
+//     postgresServerFqdn: postgresServer.outputs.fqdn
+//     databaseName: databaseName
+//     databaseAdmin: databaseAdmin
+//     databasePassword: databasePassword
+//   }
+// }
 
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId

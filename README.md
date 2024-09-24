@@ -70,8 +70,11 @@ Run the following script
 ```
 azd env get-values | grep AZURE_ENV_NAME
 source <(azd env get-values | grep AZURE_ENV_NAME)
-bash ./azd-hooks/deploy.sh 03-rag $AZURE_ENV_NAME
+bash ./azd-hooks/deploy.sh 06-agents-reports-lg $AZURE_ENV_NAME
 ```
 
 All the other chapters work the same.
 
+### Configure prompt flow tracing
+
+https://microsoft.github.io/promptflow/reference/pf-command-reference.html
