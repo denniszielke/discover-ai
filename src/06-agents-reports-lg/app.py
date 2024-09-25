@@ -255,9 +255,8 @@ def handle_analyst(state):
     print("analyst rewriting...")
     
     analsis = model_response(analyst_start.format(specialization,feedback,statements,insights))
-    if (analsis.certainty > 0.85):
-        messages.append(AIMessage(content="Analyst (" + str(analsis.certainty) +  "): "+analsis.reasoning))
-        messages.append(SystemMessage(content=statements))
+    messages.append(AIMessage(content="Analyst (" + str(analsis.certainty) +  "): "+analsis.reasoning))
+    messages.append(SystemMessage(content=statements))
 
     print("analyst done")
     return {'history':history+'\n STATEMENTS:\n'+analsis.response,'statements':analsis.response, 'insights': insights, 'messages':messages}
@@ -297,6 +296,10 @@ Statements: \n {} \n Feedback: \n {} \n"
 def deployment_ready(state):
     deployment_ready = 1 if 'yes' in llm(classify_feedback.format(state.get('statements'),state.get('feedback'))) else 0
     total_iterations = 1 if state.get('iterations')>5 else 0
+    print(state);
+    if state.get('iterations')>8:
+        print("Iterations exceeded")
+        return "handle_result"
     return "handle_result" if  deployment_ready or total_iterations else "handle_analyst" 
 
 

@@ -50,23 +50,12 @@ retriever = AzureAISearchRetriever(
     content_key="plot", top_k=5, index_name="movies-semantic-index", service_name=os.getenv("AZURE_AI_SEARCH_NAME"), api_key=os.getenv("AZURE_AI_SEARCH_KEY")
 )    
 
-template = """Answer the question based only on the following context:
-
-{context}
-
-Question: {question}
-"""
-
 prompt = ChatPromptTemplate.from_messages(
     [
         ("system", "Answer the question based only on the following context:\n\n{context}"),
         ("user", "{input}"),
     ]
 )
-
-prompt.with_config({"run_name": "ChatPromptTemplate.langchain.task", "run_id": st.session_state["session_id"], "configurable": {"cat": "peter"}, "tags": ["my_template"], "metadata": {"category": "jokes"}})
-
-prompt.output_schema()
 
 def format_docs(docs):
     return "\n\n".join([d.page_content for d in docs])
@@ -77,10 +66,6 @@ chain = (
     | llm
     | StrOutputParser()
 )
-
-from langchain_core.runnables.config import RunnableConfig
-
-print(chain.Config())
 
 if prompt := st.chat_input():
 
