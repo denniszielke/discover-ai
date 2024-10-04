@@ -7,10 +7,9 @@ import getpass
 import random
 from langchain_openai import AzureChatOpenAI
 from langchain_openai import AzureOpenAIEmbeddings
-from langchain_community.callbacks.streamlit import (
-    StreamlitCallbackHandler,
-)
+from pydantic import BaseModel, Field
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+from langchain_core.messages import BaseMessage, SystemMessage
 from promptflow.tracing import start_trace
 
 dotenv.load_dotenv()
@@ -81,6 +80,28 @@ else:
 def llm(x):
     return model.invoke(x).content
 
+class Statement(BaseModel):
+    response: str = Field(
+        ...,
+        description="The response to the question",
+    )
+    reasoning: str = Field(
+        ...,
+        description="The reasoning behind the response",
+    )
+    certainty: float = Field(
+        ...,
+        description="The certainty of the correctness of the response",
+    )
+
+def model_response(input) -> Statement:
+    completion = model.beta.chat.completions.parse(
+        model = os.getenv("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME"),
+        messages = [{"role" : "assistant", "content" : f""" Help me understand the following by giving me a response to the question, a short reasoning on why the response is correct and a rating on the certainty on the correctness of the response:  {input}"""}],
+        response_format = Statement)
+    
+    return completion.choices[0].message.parsed
+
 def get_session_id() -> str:
     id = random.randint(0, 1000000)
     return "00000000-0000-0000-0000-" + str(id).zfill(12)
@@ -92,10 +113,12 @@ if "session_id" not in st.session_state:
 
 from typing import Dict, TypedDict, Optional
 from langgraph.graph import StateGraph, END
+from langgraph.graph.message import add_messages
 import random
 from typing import Annotated, Sequence, TypedDict
 
 class GraphState(TypedDict):
+    objective: Optional[str] = None
     feedback: Optional[str] = None
     history: Optional[str] = None
     code: Optional[str] = None
@@ -104,70 +127,79 @@ class GraphState(TypedDict):
     iterations: Optional[int]=None
     code_compare: Optional[str]=None
     actual_code: Optional[str]=None
+    messages: Annotated[Sequence[BaseMessage], add_messages] = []
 
 workflow = StateGraph(GraphState)
 
 ### Edges
+
+
+
+
+
+
+
+### Nodes
 
 reviewer_start= "You are Code reviewer specialized in {}.\
 You need to review the given code following PEP8 guidelines and potential bugs\
 and point out issues as bullet list.\
 Code:\n {}"
 
+def handle_reviewer(state):
+    history = state.get('history', '').strip()
+    code = state.get('code', '').strip()
+    specialization = state.get('specialization','').strip()
+    iterations = state.get('iterations')
+    messages = state.get('messages')
+    print("Reviewer working...")
+    
+    feedback = llm(reviewer_start.format(specialization,code))
+    messages.append(AIMessage(content="Reviewer: " + feedback))
+
+    return {'history':history+"\n REVIEWER:\n"+feedback,'feedback':feedback,'iterations':iterations+1, 'messages':messages}
+
 coder_start = "You are a Coder specialized in {}.\
 Improve the given code given the following guidelines. Guideline:\n {} \n \
 Code:\n {} \n \
 Output just the improved code and nothing else."
+def handle_coder(state):
+    history = state.get('history', '').strip()
+    feedback = state.get('feedback', '').strip()
+    code =  state.get('code','').strip()
+    specialization = state.get('specialization','').strip()
+    messages = state.get('messages')
+    print("CODER rewriting...")
+    
+    code = llm(coder_start.format(specialization,feedback,code))
+    messages.append(AIMessage(content="Coder: " + code))
+    return {'history':history+'\n CODER:\n'+code,'code':code, 'messages':messages}
 
 rating_start = "Rate the skills of the coder on a scale of 10 given the Code review cycle with a short reason.\
 Code review:\n {} \n "
 
 code_comparison = "Compare the two code snippets and rate on a scale of 10 to both. Dont output the codes.Revised Code: \n {} \n Actual Code: \n {}"
 
-classify_feedback = "Are all feedback mentioned resolved in the code? Output just Yes or No.\
-Code: \n {} \n Feedback: \n {} \n"
-
-### Nodes
-
-def handle_reviewer(state):
-    history = state.get('history', '').strip()
-    code = state.get('code', '').strip()
-    specialization = state.get('specialization','').strip()
-    iterations = state.get('iterations')
-    
-    print("Reviewer working...")
-    
-    feedback = llm(reviewer_start.format(specialization,code))
-    
-    return {'history':history+"\n REVIEWER:\n"+feedback,'feedback':feedback,'iterations':iterations+1}
-
-def handle_coder(state):
-    history = state.get('history', '').strip()
-    feedback = state.get('feedback', '').strip()
-    code =  state.get('code','').strip()
-    specialization = state.get('specialization','').strip()
-    
-    print("CODER rewriting...")
-    
-    code = llm(coder_start.format(specialization,feedback,code))
-    return {'history':history+'\n CODER:\n'+code,'code':code}
-
 def handle_result(state):
     print("Review done...")
-    
+    messages = state.get('messages')
     history = state.get('history', '').strip()
     code1 = state.get('code', '').strip()
     code2 = state.get('actual_code', '').strip()
     rating  = llm(rating_start.format(history))
     
     code_compare = llm(code_comparison.format(code1,code2))
-    return {'rating':rating,'code_compare':code_compare}
+    messages.append(AIMessage(content="Result: " + code_compare))
+
+    return {'rating':rating,'code_compare':code_compare, 'messages':messages}
 
 # Define the nodes we will cycle between
 workflow.add_node("handle_reviewer",handle_reviewer)
 workflow.add_node("handle_coder",handle_coder)
 workflow.add_node("handle_result",handle_result)
 
+classify_feedback = "Are all feedback mentioned resolved in the code? Output just Yes or No.\
+Code: \n {} \n Feedback: \n {} \n"
 def deployment_ready(state):
     deployment_ready = 1 if 'yes' in llm(classify_feedback.format(state.get('code'),state.get('feedback'))) else 0
     total_iterations = 1 if state.get('iterations')>5 else 0
@@ -189,12 +221,8 @@ workflow.add_edge('handle_result', END)
 
 # Compile
 
-specialization = 'python'
-problem = 'Generate code to train a Regression ML model using a tabular dataset following required preprocessing steps.'
-code = llm(problem)
-
 app = workflow.compile()
-conversation = app.invoke({"history":code,"code":code,'actual_code':code,"specialization":specialization,'iterations':0},{"recursion_limit":100})
+# conversation = app.invoke({"history":code,"code":code,'actual_code':code,"specialization":specialization,'iterations':0},{"recursion_limit":100})
 
 human_query = st.chat_input()
 
@@ -202,37 +230,31 @@ if human_query is not None and human_query != "":
 
     st.session_state.chat_history.append(HumanMessage(human_query))
 
-    inputs = {
-        "messages": [
-            ("user", human_query),
-        ]
-    }
+    specialization = 'python'
+    code = llm(human_query)
+
+    inputs = {"objective": human_query, "history":code,"code":code,'actual_code':code,"specialization":specialization,'iterations':0}
+
+    config = {"recursion_limit":100}
 
     with st.chat_message("Human"):
         st.markdown(human_query)
 
-    for event in app.stream(inputs):       
+    for event in app.stream(inputs, config):       
         print ("message: ")
         for value in event.values():
+            print("streaming")
             print(value)
-            if ( isinstance(value["messages"][-1], AIMessage) ):
-                print("AI:", value["messages"][-1].content)
-                with st.chat_message("Agent"):
-                    if (value["messages"][-1].content == ''):
-                        toolusage = ''
-                        for tool in value["messages"][-1].additional_kwargs["tool_calls"]:
-                            print(tool)
-                            toolusage += "id:" + str(tool["index"]) + "  \n name: " + tool["function"]["name"] + "  \n arguments: " + tool["function"]["arguments"] + "  \n\n"
-                        st.write("Using the folllwing tools: \n", toolusage)
-                    else:
-                        st.write(value["messages"][-1].content)
-            
-            if ( isinstance(value["messages"][-1], ToolMessage) ):
-                print("Tool:", value["messages"][-1].content)
-                with st.chat_message("Tool"):
-                    st.write(value["messages"][-1].content.replace('\n\n', ''))
-            
-            if ( isinstance(value["messages"][-1], str) ):
-                print("Agent:", value["messages"][-1])
-                with st.chat_message("AI"):
-                    st.write(value["messages"][-1])
+
+            if ( value["messages"].__len__() > 0 ):
+                for message in value["messages"]:
+                    if (message.content.__len__() > 0):
+                        if ( isinstance(message, AIMessage) ):
+                            with st.chat_message("AI"):
+                                st.write(message.content)
+                        elif ( isinstance(message, SystemMessage) ):
+                            with st.chat_message("human"):
+                                st.write(message.content)
+                        else:
+                            with st.chat_message("Agent"):
+                                st.write(message.content)

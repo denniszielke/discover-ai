@@ -25,7 +25,6 @@ from langchain.prompts.chat import ChatPromptTemplate
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, END
 from typing import List
-from pydantic import BaseModel, Field
 
 dotenv.load_dotenv()
 
@@ -188,8 +187,6 @@ vector_store = QdrantVectorStore(
 )
 
 retriever = vector_store.as_retriever()
-
-
 
 class ReportState(TypedDict):
     feedback: Optional[str] = None
