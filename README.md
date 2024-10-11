@@ -22,7 +22,9 @@ The following scenarios are implemented in this repository:
 | [Tracing Language Models](./src/04-orchestration-lc/tracing.ipynb)| Learning about tracing language model invocations | Azure OpenAI, LangChain, Azure PromptFlow  |
 | [Tracing Chat application](./src/04-orchestration-lc/app.py)| Learning about tracing a running application | Azure OpenAI, LangChain, Azure PromptFlow, Streamlit, Azure AI Search  |
 | [Function Calling](./src/05-tools/tools-openai.ipynb)| Learning about using tools from a model | Azure OpenAI, Azure PromptFlow |
+| [Create picture generation](./src/06-agents-creative-ag/autogen-gtp4o.ipynb)| Learning about different models to collaborate for better picutres | Azure OpenAI, Autogen |
 | [Orchestrating tools](./src/05-tools/app.py)| Learning about orchestrating tools from an application | Azure OpenAI, Azure PromptFlow, LangChain |
+| [Orchestrating tools](./src/05-agents-coding-lg/app.py)| Learning about models generating better code | Azure OpenAI, Azure PromptFlow, LangChain |
 | [Orchestrating multiple tools](./src/05-multi-tools-tag-lc/app.py)| Learning about multiple orchestrating tools from an application | Azure OpenAI, Azure PromptFlow, LangChain |
 | [Agentic RAG](./src/06-agents-lg/app.py)| Learning about using agentic retrieval augmented generation | Azure OpenAI, Azure PromptFlow, LangChain, Langgraph |
 | [Async Agents Tools](./src/06-agents-tools-li/app.py)| Learning about using agentic async tools | Azure OpenAI, Azure PromptFlow, Lama Index |
