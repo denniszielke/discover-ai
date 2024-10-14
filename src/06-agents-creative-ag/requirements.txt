@@ -1,0 +1,9 @@
+openai==1.51.2
+pydantic==2.9.2
+python-dotenv==1.0.1
+tiktoken==0.7.0
+azure-search-documents==11.5.1
+azure-identity==1.17.1
+streamlit==1.39.0
+autogen-agentchat~=0.2
+autogenstudio
