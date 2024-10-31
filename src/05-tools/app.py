@@ -75,13 +75,22 @@ else:
 llm.with_config({"run_name": "ChatPromptTemplate.langchain.task", "run_id": st.session_state["session_id"], "configurable": {"cat": "peter"}, "tags": ["my_template"], "metadata": {"category": "jokes"}})
 
 @tool
-def get_current_location(input: str) -> str:
-    "Get the current timezone location of the user."
-    return "Europe/Berlin"
+def get_current_username(input: str) -> str:
+    "Get the username of the current user."
+    return "Dennis"
+
+@tool
+def get_current_location(username: str) -> str:
+    "Get the current timezone location of the user for a given username."
+    print(username)
+    if "Dennis" in username:
+        return "Europe/Berlin"
+    else:
+        return "America/New_York"
 
 @tool
 def get_current_time(location: str) -> str:
-    "Get the current time in the given location. The pytz is used to get the timezone for that location. Location names should be in a format like America/New_York, Asia/Bangkok, Europe/London. Anything in Germany should be Europe/Berlin"
+    "Get the current time in the given location. The pytz is used to get the timezone for that location. Location names should be in a format like America/Seattle, Asia/Bangkok, Europe/London. Anything in Germany should be Europe/Berlin"
     try:
         print("get current time for location: ", location)
         location = str.replace(location, " ", "")
@@ -101,7 +110,7 @@ def get_current_time(location: str) -> str:
     
 tools = []
 tools = [get_current_time]
-tools = [get_current_location, get_current_time]
+tools = [get_current_username, get_current_location, get_current_time]
 
 commandprompt = '''
     ##
