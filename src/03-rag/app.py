@@ -20,6 +20,10 @@ from opentelemetry.instrumentation.langchain import LangchainInstrumentor
 instrumentor = LangchainInstrumentor()
 if not instrumentor.is_instrumented_by_opentelemetry:
     instrumentor.instrument()
+from promptflow.tracing import start_trace
+
+# start a trace session, and print a url for user to check trace
+start_trace()
 
 def get_session_id() -> str:
     id = random.randint(0, 1000000)
